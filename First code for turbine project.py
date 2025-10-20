@@ -30,9 +30,9 @@ def drag_force(blade_lengths: list, wind_speed: float, cd: float=1.28, density_a
     return drag_force_list
 
 # Function to compute deflectiion for all diameters at a given wind speed
-def deflection(blade_length, wind_force, E = 210e9, width = 1, height = 2):
+def deflection(blade_lengths, wind_force, E = 210e9, width = 1, height = 2):
     tip_deflection = [] 
-    for i, w in zip(blade_length, wind_force):
+    for i, w in zip(blade_lengths, wind_force):
         I = (width * height ** 3) / 12  # Moment of inertia for a rectangular cross-section
         ''' 
         This is found from ODE of bending beam with distributed load

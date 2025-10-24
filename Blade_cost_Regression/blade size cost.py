@@ -8,12 +8,11 @@ production_volume_turbines = 50
 blades_total_produced = production_volume_turbines * num_blades
 
 # Material cost (£/m³)
-C_glass = 1500.0    # £/m³ (slightly cheaper)
-C_carbon = 12000.0  # £/m³ (reduced for realistic scaling)
+C_glass = 1500.0    # £/m³ 
+C_carbon = 12000.0  # £/m³ 
 
 # Initial model
 def blade_volume(L):
-    # Reduced scaling factor to match realistic volumes (hundreds of m³)
     return 12.0 * (L / 50.0)**2.4
 
 # Initial carbon fraction
@@ -34,7 +33,7 @@ def structural_strengthening(L):
         volume_mult += 0.0015 * (L - 60)
     return volume_mult, extra_carbon
 
-# Tooling cost model (scaled down)
+# Tooling cost model
 def tooling_cost_components(L,
                             base_mould_cost=150_000.0,
                             mould_size_growth_factor=0.0003,

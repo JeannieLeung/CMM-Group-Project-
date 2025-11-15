@@ -38,7 +38,8 @@ blade_lengths = np.arange(40.0, 70.0, 0.5)
 def drag_load(blade_lengths: list, wind_speed: float, cd: float=1.28, density_air:float =1.225) -> list:
     drag_load_list = []  # Initialize an empty list to store drag forces
     for i in blade_lengths:
-        dl = 0.5 * cd * density_air * height * (wind_speed** 2)
+        area = i * width
+        dl = 0.5 * cd * density_air * area * (wind_speed** 2)
         drag_load_list.append(dl)
     return drag_load_list
 
@@ -120,4 +121,5 @@ for i, vals in zip(blade_lengths, zip(*deflection_results)):
     
 #prepare necessary data for final calculation of allowable diameter    
 ySG_array = np.array(deflection_results[-1])
-print(ySG_array)
+
+

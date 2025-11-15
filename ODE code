@@ -27,12 +27,12 @@ gravity: float = 9.81
 width: int=2
 height: int=1
 I: float = (height*width**3)/12
-#TODO: CHANGE THE ROT SPEED TO BE A FUNCTION OF TIP SPEED RATIO AND WIND SPEED, FOR NOW THIS WILL SUFFICE
-
-
 
 # Define list fo blade lengths to be tested, realistic range based on model chosen
-blade_lengths = np.arange(40.0, 60.0, 0.5)  # Turbine blade diameters from 80m to 120m in 1m increments, while being represented by radii
+# Turbine blade diameters from 80m to 140m in 1m increments, while being represented by radii
+#TODO Upper bound for blade length chosen based on optimal rotor radius given by power calculation "CMM3 Group Project Power and Cp Root Finding doc" 
+#TODO TOM WRITE THIS IN THE README PLEASE!!
+blade_lengths = np.arange(40.0, 70.0, 0.5)  
     
 # Function to compute drag forces for all diameters at a given wind speed
 def drag_load(blade_lengths: list, wind_speed: float, cd: float=1.28, density_air:float =1.225) -> list:
@@ -42,7 +42,6 @@ def drag_load(blade_lengths: list, wind_speed: float, cd: float=1.28, density_ai
         drag_load_list.append(dl)
     return drag_load_list
 
-#TODO NOTICE THIS WILL BE SIMPLIFIED WE NEED VARIABLE ROT SPEED, AND GUESSED WIDTH
 #function to compute rotational drag force
 def rot_load(blade_lengths, wind_speed, cd, density_air, width):
     rot_load_list = []
@@ -59,8 +58,6 @@ def grav_load(blade_lengths, density_blade, gravity, width):
         b = density_blade * gravity * width * height
         grav_load_list.append(b)
     return grav_load_list
-
-#TODO WIDTH AND HEIGHT ARE ARBITRARY GUESSES FOR NOW
 
 def solve_tip_deflection_for_length(L: float, a_r: float, b_const: float, rl_const: float) -> float:
     """
@@ -94,7 +91,7 @@ def solve_tip_deflection_for_length(L: float, a_r: float, b_const: float, rl_con
     y2L = make_solver(rhs2)
     return hypot(y1L, y2L)
 
-# Paste wind buns and run ODE
+# Paste wind speeds and run ODE
 wind_keys = ["light","gentle","moderate","fresh","strong","near_gale","strong_gale"]
 deflection_results = []
 

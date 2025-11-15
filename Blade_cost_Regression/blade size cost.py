@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 # Parameters
-diameters = np.arange(50, 136, 1)   # 50–135 m
+radius = np.arange(40, 70, 1)   # corresponding swept blade diameter 80–145 m
 num_blades = 3
 production_volume_turbines = 50
 blades_total_produced = production_volume_turbines * num_blades
@@ -93,9 +93,9 @@ def deterministic_blade_cost(L, production_blades=blades_total_produced):
     }
 
 # Table 
-def compute_table(diameters):
+def compute_table(radius):
     data = []
-    for D in diameters:
+    for D in radius:
         L = D / 2.0
         data.append(deterministic_blade_cost(L))
     df = pd.DataFrame(data)
@@ -103,7 +103,7 @@ def compute_table(diameters):
 
 # Main 
 if __name__ == "__main__":
-    df = compute_table(diameters)
+    df = compute_table(radius)
     pd.options.display.float_format = "{:,.0f}".format
     print(df.head(8))
     print(df.tail(8))

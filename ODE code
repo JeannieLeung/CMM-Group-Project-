@@ -18,7 +18,7 @@ rot_force_results: list[list[float]] = []
 deflection_results: list[list[float]] = []
 
 #define other input variables
-E: int = 40e9  # Young's modulus for steel 
+E: int = 40e9  # Young's modulus for glass fibre reinforced polymer
 cd: float = 1.28  # Drag coefficient for a flat plate perpendicular to flow
 density_air: float = 1.225  # Density of air in kg/m^3
 tsr: int = 6.0

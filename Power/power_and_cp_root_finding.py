@@ -2,6 +2,24 @@ import math
 import numpy as np 
 import matplotlib.pyplot as plt 
 
+#Code added to be used in optimizer code 
+V_wind = 6.0  # default site wind speed (m/s) – safe for imports
+
+
+def compute_lambda_optimal():
+    lambda_guess = 8.5
+    ERROR_TOLERANCE = 1e-6
+    MAX_ITER = 20
+    return newton(g_lambda, dg_dlambda, lambda_guess, ERROR_TOLERANCE, MAX_ITER)
+
+def expected_power_MW(D, V=V_wind):
+    R = D / 2.0
+    lam = (Omega_r * R) / V
+    Cp = calculate_Cp(lam, Omega_r, V)
+    RHO_AIR = 1.225
+    P = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V**3)
+    return P / 1_000_000.0
+
 """
 I am finding the root of a function g(lambda)=0 using the newton raphson technique 
 Also calculating the relative error between iterations such that the loop will stop when the gap between iterations is small enough to be approximated as the root. This is defined by the equation ((xn-xnold)/xn) the theory behind this equation is that as the newton raphson equation convergs towards the root, the 'bracket' between the two guesses gets smaller. 
@@ -15,6 +33,7 @@ rleative_error_tolerance : The cirteria for loop termination - once the relative
 max_iter : a pre determined number of maximum iterations - I have had to select a number of 50 iterations to prevent an infinite loop. (not sure if i need this only probably need one or the other)
 
 """
+
 
 #Implemementning Newton raphson method 
 def newton(f, Df, x0, relative_error_tolerance, max_iter):

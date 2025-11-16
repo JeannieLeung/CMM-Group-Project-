@@ -136,7 +136,7 @@ for key in wind_keys:
 print("# Results (BVP): deflection vs. blade length")
 for i, vals in zip(blade_lengths, zip(*deflection_results)):
     yL, yG, yM, yF, yS, yNG, ySG = vals
-    print(f"Diameter: {i:.1f} m, yL: {yL:.3g} m, yG: {yG:.3g} m, yM: {yM:.3g} m, "
+    print(f"blade length: {i:.1f} m, yL: {yL:.3g} m, yG: {yG:.3g} m, yM: {yM:.3g} m, "
           f"yF: {yF:.3g} m, yS: {yS:.3g} m, yNG: {yNG:.3g} m, ySG: {ySG:.3g} m")
     
 #prepare necessary data for final calculation of allowable diameter    

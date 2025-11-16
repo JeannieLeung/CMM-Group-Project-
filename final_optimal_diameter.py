@@ -4,9 +4,10 @@ import numpy as np
 
 # Import existing functions: 
 import numpy as np
+#start code with creating new branch again 
+from Power.power_and_cp_root_finding import expected_power_MW
 
-from power_and_cp_root_finding import lambda_optimal, expected_power_MW
-from ODE_code import solve_tip_for_DV
+from ODE_group.ODE_code import solve_tip_for_DV
 from Blade_cost_Regression.blade_size_cost import deterministic_blade_cost
 
 RHO_AIR = 1.225    # not used here but common constant if you extend

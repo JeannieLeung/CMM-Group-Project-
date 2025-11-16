@@ -29,8 +29,11 @@ WIND_BINS = list(velocityDict.items())
 # one-time compute; safe because it's a function now
 lambda_opt = compute_lambda_optimal()
 
+
+
 def cost_gbp(D: float) -> float:
-    return float(deterministic_blade_cost(D / 2)["TotalCost_£"])
+    per_blade = float(deterministic_blade_cost(D/2)["TotalCost_£"])
+    return 3.0 * per_blade
 
 def worstcase_tip_deflection(D: float) -> float:
     V = max(velocityDict.values())   # use the max wind speed
@@ -66,6 +69,7 @@ def optimise_diameter(D_min=80.0, D_max=130.0, step=0.5, V_power=6.0):
     }
 
 if __name__ == "__main__":
+    
     out = optimise_diameter()
     print(
         f"[Integrated optimum] D = {out['D_opt_m']:.1f} m | "

@@ -16,9 +16,12 @@ def expected_power_MW(D, V=V_wind):
     R = D / 2.0
     lam = (Omega_r * R) / V
     Cp = calculate_Cp(lam, Omega_r, V)
+    Cp = max(0.0, min(0.593, Cp))  # <— keep this
     RHO_AIR = 1.225
     P = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V**3)
     return P / 1_000_000.0
+
+
 
 """
 I am finding the root of a function g(lambda)=0 using the newton raphson technique 
@@ -256,7 +259,7 @@ if __name__ == "__main__":
 
     # running newton raphson solver using all the setup from above 
     # Pass the numerical functions to the solver
-    lambda_optimal = newton(g_lambda, dg_dlambda, lambda_guess, ERROR_TOLERANCE, MAX_ITER)
+    lambda_optimal = compute_lambda_optimal()
                                
                               
 
@@ -279,68 +282,73 @@ if __name__ == "__main__":
     else:
         print("\nOptimization failed. Could not find a solution.")
 
-
-"""
-Creating a plot of the results (Power against radius, Cp vs Lambda) as long as the root has been found
-"""
-
-#First plot: Power generated against radius
-#radius range is from 10m to 65m
-radius_range = np.linspace(10, 65, 50) # 50 points from 10m to 65m
-power_values = []
-RHO_AIR = 1.225 #air density at sea level 
-        
-print("Calculating Power-Radius plot ")
-for R in radius_range:
-    # Final values for Lambda are calculated using the standard formula 
-    Lambda_final = (Omega_r * R) / V_wind
     
-    
-    # Avoid division by zero if Lambda_final is 0
-    V_wind_for_model = 0.0
-    if Lambda_final > 1e-6:
-        V_wind_for_model = (Omega_r * Radius) / Lambda_final # 'Radius' is 20.5
-    
-    # Get the Cp for this tip-speed ratio (Lambda_final)
-    Cp = calculate_Cp(Lambda_final, Omega_r, V_wind_for_model)
+    """
+    Creating a plot of the results (Power against radius, Cp vs Lambda) as long as the root has been found
+    """
 
-   #Calculating power for the wind turbine at the given avrage wind velocity, and the found coefficient of performance value 
-    power = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_wind**3)
-    power_values.append(power / 1_000) # Convert power to Kilowatts 
+    #First plot: Power generated against radius
+    #radius range is from 10m to 65m
+    radius_range = np.linspace(10, 65, 50) # 50 points from 10m to 65m
+    power_values = []
+    RHO_AIR = 1.225 #air density at sea level 
             
-plt.figure(2)        
-plt.plot(radius_range, power_values, 'g-', label='Estimated Power')
-plt.axvline(x=R_optimal, color='r', linestyle='--', label=f'Optimal Radius is ({R_optimal:.2f} m)')
-plt.title(f'Power vs Blade Radius at wind speed {V_wind} m/s')
-plt.xlabel('Blade Radius (m)')
-plt.ylabel('Power (kW)')
-plt.grid(True)
-plt.legend()
-plt.savefig('Power_vs_Radius.png')
-print("Saved 'Power_vs_Radius.png'")
+    print("Calculating Power-Radius plot ")
+    for R in radius_range:
+        # Final values for Lambda are calculated using the standard formula 
+        Lambda_final = (Omega_r * R) / V_wind
+        
+        
+        # Avoid division by zero if Lambda_final is 0
+        V_wind_for_model = 0.0
+        if Lambda_final > 1e-6:
+            V_wind_for_model = (Omega_r * Radius) / Lambda_final # 'Radius' is 20.5
+        
+        # Get the Cp for this tip-speed ratio (Lambda_final)
+        Cp = calculate_Cp(Lambda_final, Omega_r, V_wind_for_model)
 
-if lambda_optimal is not None:
-    print("Plotting Cp vs Lambda & Power vs radius")
-    
-    #second plot - Cp vs lambda - I am actually modelling this using values from a paper (cited in report) which has a corresponding graph of power vs radius and cp vs lambda which allows me to check the shape of the graphs against those in the text cited. 
-    #the graph in the text 'the aerodynamics of wind turbines' is attached in the report, this plot will allow us to check the final values against those found by other researchers
-    #value range
-    Lambda_values = np.linspace(1,15,50)  
-    Cp_values = []
-    
-    for Lambda in Lambda_values:
-        V_wind_dynamic = (Omega_r * Radius) / Lambda
-        Cp = calculate_Cp(Lambda, Omega_r, V_wind_dynamic)
-        Cp_values.append(Cp)
-        
-        
-    plt.figure(1)
-    plt.plot(Lambda_values, Cp_values, 'b-', label='Cp (BEM Model)')
-    plt.axvline(x=lambda_optimal, color='r', linestyle='--', label=f'Optimal Lambda ({lambda_optimal:.2f})')
-    plt.title('Power Coefficient (Cp) vs Tip-Speed Ratio (Lambda)')
-    plt.xlabel('Tip-Speed Ratio (Lambda)')
-    plt.ylabel('Power Coefficient (Cp)')
+    #Calculating power for the wind turbine at the given avrage wind velocity, and the found coefficient of performance value 
+        power = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_wind**3)
+        power_values.append(power / 1_000) # Convert power to Kilowatts 
+                
+    plt.figure(2)        
+    plt.plot(radius_range, power_values, 'g-', label='Estimated Power')
+    plt.axvline(x=R_optimal, color='r', linestyle='--', label=f'Optimal Radius is ({R_optimal:.2f} m)')
+    plt.title(f'Power vs Blade Radius at wind speed {V_wind} m/s')
+    plt.xlabel('Blade Radius (m)')
+    plt.ylabel('Power (kW)')
     plt.grid(True)
     plt.legend()
-    plt.savefig('Cp_vs_Lambda.png')
-    print("Saved 'Cp_vs_Lambda.png'")
+    plt.savefig('Power_vs_Radius.png')
+    print("Saved 'Power_vs_Radius.png'")
+
+    if lambda_optimal is not None:
+        print("Plotting Cp vs Lambda & Power vs radius")
+        
+        #second plot - Cp vs lambda - I am actually modelling this using values from a paper (cited in report) which has a corresponding graph of power vs radius and cp vs lambda which allows me to check the shape of the graphs against those in the text cited. 
+        #the graph in the text 'the aerodynamics of wind turbines' is attached in the report, this plot will allow us to check the final values against those found by other researchers
+        #value range
+        Lambda_values = np.linspace(1,15,50)  
+        Cp_values = []
+        
+        for Lambda in Lambda_values:
+            V_wind_dynamic = (Omega_r * Radius) / Lambda
+            Cp = calculate_Cp(Lambda, Omega_r, V_wind_dynamic)
+            Cp = max(0.0, min(0.593, Cp))
+            Cp_values.append(Cp)
+            
+
+            
+        plt.figure(1)
+        plt.plot(Lambda_values, Cp_values, 'b-', label='Cp (BEM Model)')
+        plt.axvline(x=lambda_optimal, color='r', linestyle='--', label=f'Optimal Lambda ({lambda_optimal:.2f})')
+        plt.title('Power Coefficient (Cp) vs Tip-Speed Ratio (Lambda)')
+        plt.xlabel('Tip-Speed Ratio (Lambda)')
+        plt.ylabel('Power Coefficient (Cp)')
+        plt.grid(True)
+        plt.legend()
+        plt.savefig('Cp_vs_Lambda.png')
+        print("Saved 'Cp_vs_Lambda.png'")
+
+
+

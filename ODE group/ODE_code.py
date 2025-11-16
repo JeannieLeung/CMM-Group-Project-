@@ -28,6 +28,26 @@ width: int=2
 height: int=1
 I: float = (height*width**3)/12
 
+# Convenience wrapper for Optimizer code: compute loads from (D, V, omega) and return tip deflection.
+# Uses the same constants defined in ODE.py (density_air, cd, width, height, etc).
+
+def solve_tip_for_DV(D: float, V: float, omega: float) -> float:
+    
+    L = D / 2.0
+
+    # rotational “drag-like” load per unit length ~ rho * cd * width * omega^2
+    a_r = 0.5 * density_air * cd * width * (omega ** 2)
+
+    # gravity load per unit length (N/m)
+    b_const = density_blade * gravity * width * height
+
+    # transverse wind load per unit length. Your BVP code used a constant term;
+    # keep consistent with that: rl(x) = const = 0.5 * rho * cd * (projected height) * V^2
+    rl_const = 0.5 * cd * density_air * height * (V ** 2)
+
+    return float(solve_tip_deflection_for_length(L, a_r, b_const, rl_const))
+
+
 # Define list fo blade lengths to be tested, realistic range based on model chosen
 # Turbine blade diameters from 80m to 140m in 1m increments, while being represented by radii
 #TODO Upper bound for blade length chosen based on optimal rotor radius given by power calculation "CMM3 Group Project Power and Cp Root Finding doc" 

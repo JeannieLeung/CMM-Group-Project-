@@ -262,8 +262,7 @@ if __name__ == "__main__":
 
 
 """
-Creating a plot of the results (Cp against lambda and then Power vs radius ) as long as the root has been found   
-    
+Creating a plot of the results (Cp against lambda and then Power vs radius) as long as the root has been found
 """
 if lambda_optimal is not None:
     print("Plotting Cp vs Lambda & Power vs radius")
@@ -294,29 +293,35 @@ if lambda_optimal is not None:
 
 
 #second plot: Power generated against radius
-#radius range is from 10m to 65m - 65m is the top end of the wind turbine blade length that is acceptable for an onshore windturbine site and is within our design constraints based on cost etc. shown in other models, also its the biggest blade length that we can accurately model without using computational fluid dynamics since past this length large inaccuracies occur. 
+#radius range is from 10m to 65m
 radius_range = np.linspace(10, 65, 50) # 50 points from 10m to 65m
 power_values = []
+RHO_AIR = 1.225 #air density at sea level 
         
 print("Calculating Power-Radius plot ")
 for R in radius_range:
-    # For a fixed V and OMEGA_R, a different R gives a different lambda
-            Lambda_final = (Omega_r * R) / V_wind
-            
-            # Find the Cp for that lambda
-            Cp = calculate_Cp(Lambda_final, Omega_r, V_wind)
-            RHO_AIR = 1.225
-            
-            # Calculate the final power
-            power = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_wind**3)
-            power_values.append(power / 1_000_000) # Convert power to Megawatts (standard convention for a wind turbine)
+    # Final values for Lambda are calculated using the standard formula 
+    Lambda_final = (Omega_r * R) / V_wind
+    
+    
+    # Avoid division by zero if Lambda_final is 0
+    V_wind_for_model = 0.0
+    if Lambda_final > 1e-6:
+        V_wind_for_model = (Omega_r * Radius) / Lambda_final # 'Radius' is 20.5
+    
+    # Get the Cp for this tip-speed ratio (Lambda_final)
+    Cp = calculate_Cp(Lambda_final, Omega_r, V_wind_for_model)
+
+   #Calculating power for the wind turbine at the given avrage wind velocity, and the found coefficient of performance value 
+    power = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_wind**3)
+    power_values.append(power / 1_000) # Convert power to Kilowatts 
             
 plt.figure(2)        
 plt.plot(radius_range, power_values, 'g-', label='Estimated Power')
-plt.axvline(x=R_optimal, color='r', linestyle='--', label=f'Optimal Radius ({R_optimal:.2f} m)')
-plt.title('Power vs Blade Radius at wind speed 6.0 m/s')
+plt.axvline(x=R_optimal, color='r', linestyle='--', label=f'Optimal Radius is ({R_optimal:.2f} m)')
+plt.title(f'Power vs Blade Radius at wind speed {V_wind} m/s')
 plt.xlabel('Blade Radius (m)')
-plt.ylabel('Power (MW)')
+plt.ylabel('Power (kW)')
 plt.grid(True)
 plt.legend()
 plt.savefig('Power_vs_Radius.png')

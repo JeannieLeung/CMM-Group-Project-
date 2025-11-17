@@ -2,7 +2,9 @@ import math
 import numpy as np 
 import matplotlib.pyplot as plt 
 
-#Code added to be used in optimizer code 
+# ------------------------------------------------------------
+# Convenience wrapper for optimizer:
+
 V_wind = 6.0
 
 def compute_lambda_optimal():
@@ -34,7 +36,7 @@ def expected_power_MW(D, V_site=V_wind):
     P = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_site**3)
     return P / 1_000_000.0
 
-#optimization code ends 
+# ----------------------------------------------------------------
 
 
 

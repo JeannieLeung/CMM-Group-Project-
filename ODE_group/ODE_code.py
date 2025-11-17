@@ -212,6 +212,31 @@ def solve_tip_deflection_for_length(L: float, a_r: float, b_const: float, rl_con
 
     return hypot(y1L, y2L)
 
+# ------------------------------------------------------------
+# Convenience wrapper for optimizer:
+# Given turbine diameter D (m), site wind speed V (m/s),
+# and rotor speed omega (rad/s), compute the blade tip
+# deflection using the same load model as this module.
+
+def solve_tip_for_DV(D: float, V: float, omega: float) -> float:
+
+    # Blade length
+    L = D / 2.0
+    
+    # Rotational "drag-like" load per unit length [N/m]
+    # Match the structure of rot_load, but use the given omega directly
+    a_r = 0.5 * AIR_DENSITY * BLADE_DRAG_COEF * BLADE_WIDTH * (omega ** 2)
+
+    # Gravity load per unit length [N/m] (same as grav_load)
+    b_const = BLADE_MASS_PER_LENGTH * GRAVITY
+
+    # Transverse wind drag load per unit length [N/m] (same as drag_load)
+    rl_const = 0.5 * BLADE_DRAG_COEF * AIR_DENSITY * BLADE_HEIGHT * (V ** 2)
+
+    # Use the main BVP solver
+    return float(solve_tip_deflection_for_length(L, a_r, b_const, rl_const))
+
+# ------------------------------------------------------------------------------
 
 def results():
     # Paste wind buns and run ODE
@@ -253,3 +278,6 @@ if __name__ == "__main__":
     data_by_wind, blade_lengths = results()
 
     ySG_array = np.array(data_by_wind["strong_gale"])
+
+
+

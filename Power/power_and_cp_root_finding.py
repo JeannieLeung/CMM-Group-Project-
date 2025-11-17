@@ -2,9 +2,10 @@ import math
 import numpy as np 
 import matplotlib.pyplot as plt 
 
-#Code added to be used in optimizer code 
-V_wind = 6.0  # default site wind speed (m/s) – safe for imports
+# ------------------------------------------------------------
+# Convenience wrapper for optimizer:
 
+V_wind = 6.0
 
 def compute_lambda_optimal():
     lambda_guess = 8.5
@@ -12,14 +13,30 @@ def compute_lambda_optimal():
     MAX_ITER = 20
     return newton(g_lambda, dg_dlambda, lambda_guess, ERROR_TOLERANCE, MAX_ITER)
 
-def expected_power_MW(D, V=V_wind):
+def expected_power_MW(D, V_site=V_wind):
+    """
+    Expected power (MW) at site wind speed V_site for a turbine of diameter D.
+    Uses the BEM Cp model defined for a 20.5 m reference blade.
+    """
     R = D / 2.0
-    lam = (Omega_r * R) / V
-    Cp = calculate_Cp(lam, Omega_r, V)
-    Cp = max(0.0, min(0.593, Cp))  # <— keep this
+
+    # Tip-speed ratio for the *real* turbine at the site wind
+    lam = (Omega_r * R) / V_site
+    if lam < 1e-6:
+        return 0.0
+
+    # Wind speed to use inside the 20.5 m BEM model
+    V_model = (Omega_r * Radius) / lam   # Radius = 20.5 m from his code
+
+    # Cp from BEM model
+    Cp = calculate_Cp(lam, Omega_r, V_model)
+    Cp = max(0.0, min(0.593, Cp))   # clip to [0, Betz]
+
     RHO_AIR = 1.225
-    P = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V**3)
+    P = 0.5 * RHO_AIR * math.pi * (R**2) * Cp * (V_site**3)
     return P / 1_000_000.0
+
+# ----------------------------------------------------------------
 
 
 

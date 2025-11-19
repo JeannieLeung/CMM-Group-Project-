@@ -97,8 +97,8 @@ In each section of the code, these inputs can be adjusted and included as variab
 
 
 ## Contributors
-JeannieLeung - Jeannie Leung
-UOEATP - Alex Patton
-Magnus-Heidenreich - Magnus Heidenreich
-pwei818 - Peggie Wei
-TomChadEDIN - Tom Chad
+- JeannieLeung - Jeannie Leung
+- UOEATP - Alex Patton
+- Magnus-Heidenreich - Magnus Heidenreich
+- pwei818 - Peggie Wei
+- TomChadEDIN - Tom Chad

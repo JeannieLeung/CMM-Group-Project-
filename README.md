@@ -93,7 +93,8 @@ For the deflection calculation
 - guessed dimensions of the turbine blade 
 - safety factor for deflections to determine safe or unsafe blade lengths
 
-In each section of the code, these inputs can be adjusted and included as variables. From there, the code can simply be run and expected data will be outputed, a list of deflections for corresponding blade lengths and wind speeds for ODE section, and graphs for regression and root finding section.  
+To generate the cost relationship graphs, replace the values in the variables of the file titled blade_size_cost.py. To find the optimal blade length based on power output, we can run the code titled power_and_cp_root_finding.py. For the beam deflection calculation, input appropriate values into file aptly titled ODE_code.py, once data has been computed safety checks for safe/unsafe blade lengths can be done by running Safety Check.py. Findally, to generate the final optimised blade length, running Final_optimal_diameter.py will find the ideal diameter based on our various variables. 
+  
 
 
 ## Contributors

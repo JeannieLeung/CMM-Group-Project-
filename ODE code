@@ -18,7 +18,7 @@ rot_force_results: list[list[float]] = []
 deflection_results: list[list[float]] = []
 
 #define other input variables
-E: int = 40e9  # Young's modulus for glass fibre reinforced polymer
+E: int = 40e9  # Young's modulus for glass fibre reinforced polymer with carbon fibres
 cd: float = 1.28  # Drag coefficient for a flat plate perpendicular to flow
 density_air: float = 1.225  # Density of air in kg/m^3
 tsr: int = 6.0
@@ -59,7 +59,7 @@ def grav_load(blade_lengths, density_blade, gravity, width):
         grav_load_list.append(b)
     return grav_load_list
 
-def solve_tip_deflection_for_length(L: float, a_r: float, b_const: float, rl_const: float) -> float:
+def solve_tip_deflection_for_length_and_mom(L: float, a_r: float, b_const: float, rl_const: float) -> float:
     """
     Solve two BVPs on [0, L] with cantilever BCs:
       y(0)=y'(0)=0, y''(L)=y'''(L)=0
@@ -84,16 +84,37 @@ def solve_tip_deflection_for_length(L: float, a_r: float, b_const: float, rl_con
             x = np.linspace(0.0, L, 50)
             Y0 = np.zeros((4, x.size))
             sol = solve_bvp(ode, bc, x, Y0, max_nodes=10000)
-        return sol.sol(np.array([L]))[0,0]
-    rhs1 = lambda x: a_r*(x**2) + b_const
-    rhs2 = lambda x, r=rl_const: np.full_like(x, r, dtype=float)
-    y1L = make_solver(rhs1)
-    y2L = make_solver(rhs2)
-    return hypot(y1L, y2L)
+        return sol   #.sol(np.array([L]))[0,0]
+    
+    # rhs1 = lambda x: a_r*(x**2) + b_const
+    # rhs2 = lambda x, r=rl_const: np.full_like(x, r, dtype=float)
+    # y1L = make_solver(rhs1)
+    # y2L = make_solver(rhs2)
+    
+     # Solve the two BVPs
+    y1L = make_solver(lambda x: a_r*(x**2) + b_const)
+    y2L = make_solver(lambda x: np.full_like(x, rl_const, dtype=float))
 
+    # Extract tip deflection
+    tip1 = y1L.sol(np.array([L]))[0,0]
+    tip2 = y2L.sol(np.array([L]))[0,0]
+    y_tip = hypot(tip1, tip2)
+    
+    #return hypot(y1L, y2L)
+    
+    #Also find bending max bending moment in the blade for safety check
+    x_values = np.linspace(0.0, L, 10)
+    M1 = E*I*y1L.sol(x_values)[2]
+    M2 = E*I*y2L.sol(x_values)[2]
+    M_max = np.max(np.sqrt(M1**2 +M2**2))
+    
+    return y_tip, M_max
+
+    
 # Paste wind speeds and run ODE
 wind_keys = ["light","gentle","moderate","fresh","strong","near_gale","strong_gale"]
 deflection_results = []
+max_moment_results = []
 
 for key in wind_keys:
     V = velocityDict[key]
@@ -102,13 +123,18 @@ for key in wind_keys:
     ar_list   = rot_load(blade_lengths, V, cd, density_air, width)      # a_r [N/m^3]
 
     y_for_this_wind = []
+    M_for_this_wind = []
+    
     for L, a_r, b, rl in zip(blade_lengths, ar_list, grav_list, drag_list):
         b_const  = float(b)    # gravity only in (a)
         rl_const = float(rl)        # wind only in (b)
-        y_tip = solve_tip_deflection_for_length(float(L), float(a_r), b_const, rl_const)
+        y_tip, M_max = solve_tip_deflection_for_length_and_mom(float(L), float(a_r), b_const, rl_const)
         y_for_this_wind.append(y_tip)
+        M_for_this_wind.append(M_max)
+        
 
     deflection_results.append(y_for_this_wind)
+    max_moment_results.append(M_for_this_wind)
 
 
 # Print in format
@@ -117,3 +143,8 @@ for i, vals in zip(blade_lengths, zip(*deflection_results)):
     yL, yG, yM, yF, yS, yNG, ySG = vals
     print(f"Diameter: {i:.1f} m, yL: {yL:.3g} m, yG: {yG:.3g} m, yM: {yM:.3g} m, "
           f"yF: {yF:.3g} m, yS: {yS:.3g} m, yNG: {yNG:.3g} m, ySG: {ySG:.3g} m")
+    
+#prepare necessary data for final calculation of allowable diameter    
+ySG_array = np.array(deflection_results[-1])
+print(ySG_array)
+print(max_moment_results)
